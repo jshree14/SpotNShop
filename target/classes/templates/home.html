@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpotNShop - Local Shop Offers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-store"></i> SpotNShop
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="btn btn-outline-light btn-sm me-2" href="/login">Login</a>
+                <a class="btn btn-light btn-sm" href="/register">Register</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section bg-light py-5">
+        <div class="container text-center">
+            <h1 class="display-4">Find Local Shop Offers</h1>
+            <p class="lead">Discover authentic deals from shops in your area</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Search Filters -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <form method="get" action="/" class="row g-3">
+                    <div class="col-md-4">
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat}" 
+                                    th:text="${cat.getDisplayName()}"
+                                    th:selected="${cat == selectedCategory}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="city" class="form-control" 
+                               placeholder="Enter city" th:value="${selectedCity}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search Offers
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Offers Grid -->
+        <div class="row">
+            <div th:if="${offers.empty}" class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> No offers found. Try adjusting your search criteria.
+                </div>
+            </div>
+            
+            <div th:each="offer : ${offers}" class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${offer.title}"></h5>
+                        <p class="card-text" th:text="${offer.description}"></p>
+                        
+                        <div class="mb-2">
+                            <span class="badge bg-secondary" th:text="${offer.category?.getDisplayName() ?: 'Other'}"></span>
+                            <span class="badge bg-info" th:text="${offer.city}"></span>
+                        </div>
+                        
+                        <div class="price-info mb-2">
+                            <span class="text-decoration-line-through text-muted">
+                                ₹<span th:text="${offer.originalPrice}"></span>
+                            </span>
+                            <span class="text-success fw-bold ms-2">
+                                ₹<span th:text="${offer.offerPrice}"></span>
+                            </span>
+                            <span class="badge bg-success ms-2" th:if="${offer.originalPrice and offer.offerPrice and offer.originalPrice > offer.offerPrice}">
+                                <span th:text="${#numbers.formatDecimal((offer.originalPrice - offer.offerPrice) * 100 / offer.originalPrice, 0, 0)}"></span>% OFF
+                            </span>
+                        </div>
+                        
+                        <div class="shop-info">
+                            <small class="text-muted">
+                                <i class="fas fa-store"></i> <span th:text="${offer.shopName}"></span><br>
+                                <i class="fas fa-map-marker-alt"></i> <span th:text="${offer.shopAddress}"></span><br>
+                                <i class="fas fa-phone"></i> <span th:text="${offer.contactNumber}"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 SpotNShop. Connecting local shops with customers.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

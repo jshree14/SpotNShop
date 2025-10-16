@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'SpotNShop'">SpotNShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-store"></i> SpotNShop
+            </a>
+
+            <div class="navbar-nav ms-auto">
+                <div sec:authorize="isAuthenticated()">
+                    <span class="navbar-text me-3">
+                        Welcome, <span sec:authentication="name"></span>
+                    </span>
+                    <a class="btn btn-outline-light btn-sm" href="/logout">Logout</a>
+                </div>
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-outline-light btn-sm me-2" href="/login">Login</a>
+                    <a class="btn btn-light btn-sm" href="/register">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <div th:replace="${content}"></div>
+    </main>
+
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 SpotNShop. Connecting local shops with customers.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

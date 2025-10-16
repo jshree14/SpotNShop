@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Offers - Shopkeeper Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-store"></i> SpotNShop</a>
+            <div class="navbar-nav ms-auto">
+                <a class="btn btn-outline-light btn-sm me-2" href="/profile">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a class="btn btn-outline-light btn-sm" href="/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group">
+                    <a href="/shopkeeper/dashboard" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="/shopkeeper/offers/new" class="list-group-item list-group-item-action">
+                        <i class="fas fa-plus"></i> Create Offer
+                    </a>
+                    <a href="/shopkeeper/offers" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-tags"></i> My Offers
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>My Offers</h2>
+                    <a href="/shopkeeper/offers/new" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Create New Offer
+                    </a>
+                </div>
+                
+                <!-- Success/Error Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${offers.empty}" class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                        <h5>No offers yet</h5>
+                        <p class="text-muted">You haven't created any offers yet. Start by creating your first offer!</p>
+                        <a href="/shopkeeper/offers/new" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Create Your First Offer
+                        </a>
+                    </div>
+                </div>
+                
+                <div th:each="offer : ${offers}" class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 th:text="${offer.title}"></h5>
+                                <p class="text-muted" th:text="${offer.description}"></p>
+                                
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary" th:text="${offer.category?.getDisplayName() ?: 'Other'}"></span>
+                                    <span class="badge bg-info" th:text="${offer.city}"></span>
+                                </div>
+                                
+                                <small class="text-muted">
+                                    <i class="fas fa-store"></i> <span th:text="${offer.shopName}"></span><br>
+                                    <i class="fas fa-map-marker-alt"></i> <span th:text="${offer.shopAddress}"></span><br>
+                                    <i class="fas fa-phone"></i> <span th:text="${offer.contactNumber}"></span><br>
+                                    <i class="fas fa-calendar"></i> Valid until: 
+                                    <span th:if="${offer.validUntil}" th:text="${#temporals.format(offer.validUntil, 'MMM dd, yyyy HH:mm')}"></span>
+                                    <span th:if="${offer.validUntil == null}" class="text-muted">No expiry date</span>
+                                </small>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <span class="text-decoration-line-through text-muted" th:if="${offer.originalPrice}">₹<span th:text="${offer.originalPrice}"></span></span><br>
+                                    <span class="text-success fw-bold" th:if="${offer.offerPrice}">₹<span th:text="${offer.offerPrice}"></span></span><br>
+                                    <span class="badge bg-success" th:if="${offer.originalPrice and offer.offerPrice and offer.originalPrice > offer.offerPrice}">
+                                        <span th:text="${#numbers.formatDecimal((offer.originalPrice - offer.offerPrice) * 100 / offer.originalPrice, 0, 0)}"></span>% OFF
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <span class="badge mb-2" 
+                                          th:classappend="${offer.status?.name() == 'APPROVED'} ? 'bg-success' : 
+                                                         (${offer.status?.name() == 'REJECTED'} ? 'bg-danger' : 'bg-warning')"
+                                          th:text="${offer.status?.getDisplayName() ?: 'Unknown'}">
+                                    </span>
+                                    
+                                    <div th:if="${offer.adminComments}" class="mt-2">
+                                        <small class="text-muted">
+                                            <strong>Admin Notes:</strong><br>
+                                            <span th:text="${offer.adminComments}"></span>
+                                        </small>
+                                    </div>
+                                    
+                                    <div th:if="${offer.status?.name() == 'PENDING'}" class="mt-2">
+                                        <small class="text-info">
+                                            <i class="fas fa-clock"></i> Awaiting approval
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Delete Button -->
+                                    <div class="mt-3">
+                                        <form th:action="@{'/shopkeeper/offers/' + ${offer.id} + '/delete'}" 
+                                              method="post" 
+                                              onsubmit="return confirm('Are you sure you want to delete this offer? This action cannot be undone.')">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
