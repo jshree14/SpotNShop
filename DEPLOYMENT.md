@@ -2,7 +2,7 @@
 
 ## Deploy to Render
 
-### Option 1: Using render.yaml (Recommended)
+### Option 1: Using render.yaml (Java Runtime)
 
 1. **Push to GitHub:**
    ```bash
@@ -17,6 +17,16 @@
    - Click "New" → "Blueprint"
    - Connect your GitHub repository
    - Render will automatically detect `render.yaml`
+
+### Option 2: Using Docker (Alternative)
+
+If Java runtime fails, rename files:
+```bash
+mv render.yaml render-java.yaml
+mv render-docker.yaml render.yaml
+```
+
+Then push to GitHub and deploy.
 
 3. **Environment Variables:**
    Render will automatically set up:
