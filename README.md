@@ -37,14 +37,30 @@ SpotNShop is a comprehensive Java Spring Boot application that connects local sh
 - **ORM**: Hibernate/JPA with automatic schema generation
 - **File Upload**: Spring Multipart with configurable size limits
 
-## Quick Start
+## 🚀 Deployment
 
-### Prerequisites
+### Live Application
+Deploy your SpotNShop application on Railway for free!
+
+**Railway Deployment (Recommended)**
+1. **Sign Up**: Go to [railway.app](https://railway.app) and sign up with GitHub
+2. **Create Project**: Click "New Project" → "Deploy from GitHub repo" → Select SpotNShop
+3. **Add Database**: Click "New" → "Database" → "Add PostgreSQL" 
+4. **Set Environment Variables**:
+   ```
+   SPRING_PROFILES_ACTIVE=production
+   PORT=8080
+   ```
+5. **Deploy**: Railway automatically builds and deploys your app
+6. **Access**: Your app will be available at `your-app-name.up.railway.app`
+
+### Local Development
+
+#### Prerequisites
 - Java 17 or higher
 - Maven 3.6+
 
-### Running the Application
-
+#### Running Locally
 1. Clone the repository
 2. Navigate to the project directory
 3. Run the application:

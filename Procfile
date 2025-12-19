@@ -1,1 +1,0 @@
-web: java -Dserver.port=$PORT -jar target/spotnshop-app-1.0.0.jar
