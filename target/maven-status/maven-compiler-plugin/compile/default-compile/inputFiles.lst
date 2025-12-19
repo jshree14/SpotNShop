@@ -14,7 +14,6 @@ D:\SpotNShop\src\main\java\com\spotnshop\config\DataInitializer.java
 D:\SpotNShop\src\main\java\com\spotnshop\service\OfferService.java
 D:\SpotNShop\src\main\java\com\spotnshop\controller\ProfileController.java
 D:\SpotNShop\src\main\java\com\spotnshop\service\FavoriteService.java
-D:\SpotNShop\src\main\java\com\spotnshop\controller\FavoriteController.java
 D:\SpotNShop\src\main\java\com\spotnshop\controller\AnalyticsController.java
 D:\SpotNShop\src\main\java\com\spotnshop\model\UserRole.java
 D:\SpotNShop\src\main\java\com\spotnshop\controller\CustomerController.java
@@ -28,6 +27,7 @@ D:\SpotNShop\src\main\java\com\spotnshop\controller\HomeController.java
 D:\SpotNShop\src\main\java\com\spotnshop\controller\RegistrationController.java
 D:\SpotNShop\src\main\java\com\spotnshop\model\Category.java
 D:\SpotNShop\src\main\java\com\spotnshop\controller\DashboardController.java
+D:\SpotNShop\src\main\java\com\spotnshop\controller\FavoritesController.java
 D:\SpotNShop\src\main\java\com\spotnshop\model\Rating.java
 D:\SpotNShop\src\main\java\com\spotnshop\service\ChatService.java
 D:\SpotNShop\src\main\java\com\spotnshop\repository\AnalyticsRepository.java

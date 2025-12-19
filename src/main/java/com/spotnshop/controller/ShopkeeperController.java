@@ -67,15 +67,32 @@ public class ShopkeeperController {
     @GetMapping("/offers")
     public String myOffers(Model model, Authentication auth) {
         try {
+            System.out.println("=== Shopkeeper Offers Page Accessed ===");
             CustomUserDetailsService.CustomUserPrincipal principal = 
                 (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
             User shopkeeper = principal.getUser();
+            System.out.println("Shopkeeper: " + shopkeeper.getUsername() + " (ID: " + shopkeeper.getId() + ")");
+            
             List<Offer> offers = offerService.getOffersByShopkeeper(shopkeeper);
+            System.out.println("Found " + offers.size() + " offers for shopkeeper");
+            
+            // Debug each offer
+            for (Offer offer : offers) {
+                System.out.println("Offer: " + offer.getTitle() + " - Status: " + offer.getStatus() + " - Category: " + offer.getCategory());
+            }
+            
             model.addAttribute("offers", offers);
+            model.addAttribute("success", null);
+            model.addAttribute("error", null);
+            
+            System.out.println("Returning shopkeeper/offers template");
             return "shopkeeper/offers";
         } catch (Exception e) {
+            System.out.println("ERROR in shopkeeper offers: " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("error", "Error loading offers: " + e.getMessage());
-            return "error";
+            model.addAttribute("offers", new java.util.ArrayList<>());
+            return "shopkeeper/offers";
         }
     }
     

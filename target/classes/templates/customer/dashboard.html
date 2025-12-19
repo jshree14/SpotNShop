@@ -35,117 +35,155 @@
                     <a href="/" class="list-group-item list-group-item-action">
                         <i class="fas fa-home"></i> Public Offers
                     </a>
+                    <a href="/profile" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-cog"></i> Settings
+                    </a>
                 </div>
             </div>
             
             <div class="col-md-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Welcome, <span th:text="${customer?.fullName ?: 'Customer'}"></span>!</h2>
-                </div>
-                
-                <!-- Search Filters -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5><i class="fas fa-search"></i> Find Local Offers</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="get" action="/customer/dashboard" class="row g-3">
-                            <div class="col-md-5">
-                                <select name="category" class="form-select">
-                                    <option value="">All Categories</option>
-                                    <option th:each="cat : ${categories}" 
-                                            th:value="${cat}" 
-                                            th:text="${cat.getDisplayName()}"
-                                            th:selected="${cat == selectedCategory}">
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <input type="text" name="city" class="form-control" 
-                                       placeholder="Enter any city (leave empty for all)" th:value="${selectedCity}">
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-info w-100">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
-                            </div>
-                        </form>
+                    <h2><i class="fas fa-tachometer-alt"></i> Customer Dashboard</h2>
+                    <div>
+                        <a href="/customer/offers" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Browse Offers
+                        </a>
                     </div>
                 </div>
                 
-                <!-- Offers Display -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-tags"></i> Available Offers 
-                            <span th:if="${selectedCity != null and !selectedCity.isEmpty()}" class="text-muted">in <span th:text="${selectedCity}"></span></span>
-                            <span th:if="${selectedCity == null or selectedCity.isEmpty()}" class="text-muted">from all cities</span>
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${offers.empty}" class="text-center py-4">
-                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
-                            <h5>No offers found</h5>
-                            <p class="text-muted">Try adjusting your search criteria or check back later for new offers.</p>
+                <!-- Quick Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5>Available Offers</h5>
+                                        <h3 th:text="${totalOffers ?: 0}">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-tags fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="row">
-                            <div th:each="offer : ${offers}" class="col-md-6 mb-4">
-                                <div class="card h-100 border-info">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5>My Favorites</h5>
+                                        <h3 th:text="${favoriteCount ?: 0}">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-heart fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h5>Cities</h5>
+                                        <h3 th:text="${cityCount ?: 0}">0</h3>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-map-marker-alt fa-2x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Offers -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-clock"></i> Recent Offers</h5>
+                        <a href="/customer/offers" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${recentOffers != null and !recentOffers.empty}">
+                            <div class="row">
+                                <div th:each="offer : ${recentOffers}" class="col-md-6 mb-3">
+                                    <div class="card border-left-primary">
+                                        <div class="card-body">
                                             <h6 class="card-title" th:text="${offer.title}"></h6>
-                                            <button class="btn btn-sm btn-outline-danger favorite-btn" 
-                                                    th:data-offer-id="${offer.id}"
-                                                    onclick="toggleFavorite(this)">
-                                                <i class="far fa-heart"></i>
-                                            </button>
-                                        </div>
-                                        <p class="card-text small" th:text="${offer.description}"></p>
-                                        
-                                        <div class="mb-2">
-                                            <span class="badge bg-secondary" th:text="${offer.category?.getDisplayName() ?: 'Other'}"></span>
-                                            <span class="badge bg-info" th:text="${offer.city}"></span>
-                                            <span class="badge" 
-                                                  th:classappend="${offer.offerType?.name() == 'DISCOUNT'} ? 'bg-success' : 'bg-warning'"
-                                                  th:text="${offer.offerType?.getDisplayName() ?: 'Special'}"></span>
-                                        </div>
-                                        
-                                        <div class="price-info mb-2">
-                                            <div th:if="${offer.offerType?.name() == 'DISCOUNT' or offer.offerType?.name() == 'PERCENTAGE_OFF'}">
-                                                <span class="text-decoration-line-through text-muted" th:if="${offer.originalPrice}">
-                                                    ₹<span th:text="${offer.originalPrice}"></span>
-                                                </span>
-                                                <span class="text-success fw-bold ms-2" th:if="${offer.offerPrice}">
+                                            <p class="card-text small text-muted" th:text="${offer.description}"></p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="badge bg-secondary" th:text="${offer.category.displayName}"></span>
+                                                    <span class="badge bg-info" th:text="${offer.city}"></span>
+                                                </div>
+                                                <div class="text-success fw-bold">
                                                     ₹<span th:text="${offer.offerPrice}"></span>
-                                                </span>
-                                                <span class="badge bg-success ms-2" th:if="${offer.originalPrice and offer.offerPrice and offer.originalPrice > offer.offerPrice}">
-                                                    <span th:text="${#numbers.formatDecimal((offer.originalPrice - offer.offerPrice) * 100 / offer.originalPrice, 0, 0)}"></span>% OFF
-                                                </span>
+                                                </div>
                                             </div>
-                                            <div th:if="${offer.offerType?.name() != 'DISCOUNT' and offer.offerType?.name() != 'PERCENTAGE_OFF'}">
-                                                <span class="text-primary fw-bold" th:text="${offer.title ?: 'Special Offer'}"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="shop-info mb-2">
                                             <small class="text-muted">
-                                                <i class="fas fa-store"></i> <span th:text="${offer.shopName}"></span><br>
-                                                <i class="fas fa-map-marker-alt"></i> <span th:text="${offer.shopAddress}"></span><br>
-                                                <i class="fas fa-phone"></i> <span th:text="${offer.contactNumber}"></span>
+                                                <i class="fas fa-store"></i> <span th:text="${offer.shopName}"></span>
                                             </small>
                                         </div>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="rating-display">
-                                                <small class="text-warning">
-                                                    <i class="fas fa-star"></i> 4.5 (12 reviews)
-                                                </small>
-                                            </div>
-                                            <a th:href="@{'/ratings/offer/' + ${offer.id}}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-star"></i> Reviews
-                                            </a>
-                                        </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${recentOffers == null or recentOffers.empty}" class="text-center py-4">
+                            <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                            <h5>No recent offers</h5>
+                            <p class="text-muted">Check out the latest offers from local shops!</p>
+                            <a href="/customer/offers" class="btn btn-primary">Browse Offers</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-search"></i> Quick Search</h6>
+                            </div>
+                            <div class="card-body">
+                                <form action="/customer/offers" method="get">
+                                    <div class="mb-3">
+                                        <select name="category" class="form-select">
+                                            <option value="">All Categories</option>
+                                            <option th:each="cat : ${categories}" 
+                                                    th:value="${cat}" 
+                                                    th:text="${cat.displayName}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="text" name="city" class="form-control" placeholder="Enter city">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-cog"></i> Account Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="/profile" class="btn btn-outline-primary">
+                                        <i class="fas fa-user"></i> Edit Profile
+                                    </a>
+                                    <a href="/profile/notifications" class="btn btn-outline-info">
+                                        <i class="fas fa-bell"></i> Notifications
+                                    </a>
+                                    <a href="/favorites" class="btn btn-outline-success">
+                                        <i class="fas fa-heart"></i> My Favorites
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -155,65 +193,6 @@
         </div>
     </div>
 
-    <script>
-        function toggleFavorite(button) {
-            const offerId = button.getAttribute('data-offer-id');
-            const icon = button.querySelector('i');
-            
-            fetch(`/favorites/toggle/${offerId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (data.isFavorite) {
-                        icon.className = 'fas fa-heart';
-                        button.classList.remove('btn-outline-danger');
-                        button.classList.add('btn-danger');
-                    } else {
-                        icon.className = 'far fa-heart';
-                        button.classList.remove('btn-danger');
-                        button.classList.add('btn-outline-danger');
-                    }
-                    
-                    // Show toast notification
-                    showToast(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating favorites');
-            });
-        }
-        
-        function showToast(message) {
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
-            toast.style.cssText = 'top: 20px; right: 20px; z-index: 1050;';
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // Initialize and show toast
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            
-            // Remove toast element after it's hidden
-            toast.addEventListener('hidden.bs.toast', () => {
-                document.body.removeChild(toast);
-            });
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

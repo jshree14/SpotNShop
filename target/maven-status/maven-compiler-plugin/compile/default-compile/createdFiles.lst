@@ -6,6 +6,7 @@ com\spotnshop\service\AnalyticsService.class
 com\spotnshop\service\RatingService.class
 com\spotnshop\model\ChatMessage.class
 com\spotnshop\controller\CustomerController.class
+com\spotnshop\controller\FavoritesController.class
 com\spotnshop\controller\ImageController$ImageUploadResponse.class
 com\spotnshop\model\Rating.class
 com\spotnshop\repository\RatingRepository.class
@@ -38,7 +39,6 @@ com\spotnshop\model\Favorite.class
 com\spotnshop\service\CustomUserDetailsService$CustomUserPrincipal.class
 com\spotnshop\repository\ChatMessageRepository.class
 com\spotnshop\controller\ShopkeeperController.class
-com\spotnshop\controller\FavoriteController.class
 com\spotnshop\controller\UserManagementController.class
 com\spotnshop\model\UserRole.class
 com\spotnshop\config\SecurityConfig.class

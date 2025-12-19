@@ -38,7 +38,14 @@ public class OfferService {
     
     public List<Offer> searchOffers(Category category, String city) {
         // Always filter by APPROVED status and valid date for customer searches
-        return offerRepository.findValidOffers(OfferStatus.APPROVED, category, city);
+        System.out.println("=== OfferService.searchOffers called ===");
+        System.out.println("Category: " + category);
+        System.out.println("City: " + city);
+        
+        List<Offer> results = offerRepository.findValidOffers(OfferStatus.APPROVED, category, city);
+        System.out.println("Found " + results.size() + " offers");
+        
+        return results;
     }
     
     public List<Offer> getValidApprovedOffers() {

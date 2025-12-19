@@ -75,5 +75,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         public User getUser() {
             return user;
         }
+        
+        // Method to update the user object (for profile updates)
+        public void setUser(User user) {
+            this.user = user;
+        }
     }
 }

@@ -16,18 +16,38 @@ public class HomeController {
     @Autowired
     private OfferService offerService;
     
-    @GetMapping("/")
+    @GetMapping({"/", "/home"})
     public String home(Model model,
                       @RequestParam(required = false) Category category,
                       @RequestParam(required = false) String city) {
         
-        List<Offer> offers = offerService.searchOffers(category, city);
-        model.addAttribute("offers", offers);
-        model.addAttribute("categories", Category.values());
-        model.addAttribute("selectedCategory", category);
-        model.addAttribute("selectedCity", city);
-        
-        return "home";
+        try {
+            List<Offer> offers;
+            
+            // If search parameters are provided, use search functionality
+            if (category != null || (city != null && !city.trim().isEmpty())) {
+                offers = offerService.searchOffers(category, city);
+                System.out.println("Search performed - Category: " + category + ", City: " + city + ", Results: " + offers.size());
+            } else {
+                // Get all approved offers for home page
+                offers = offerService.getApprovedOffers();
+                System.out.println("Showing all approved offers: " + offers.size());
+            }
+            
+            model.addAttribute("offers", offers);
+            model.addAttribute("categories", Category.values());
+            model.addAttribute("selectedCategory", category);
+            model.addAttribute("selectedCity", city);
+            
+            return "home";
+        } catch (Exception e) {
+            System.out.println("Home page error: " + e.getMessage());
+            e.printStackTrace();
+            // Return home page even if there's an error, but with empty offers
+            model.addAttribute("offers", new java.util.ArrayList<>());
+            model.addAttribute("categories", Category.values());
+            return "home";
+        }
     }
     
     @GetMapping("/login")

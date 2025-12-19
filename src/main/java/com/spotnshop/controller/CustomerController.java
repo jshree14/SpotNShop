@@ -5,6 +5,7 @@ import com.spotnshop.model.Offer;
 import com.spotnshop.model.User;
 import com.spotnshop.service.CustomUserDetailsService;
 import com.spotnshop.service.OfferService;
+import com.spotnshop.service.FavoriteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,29 +22,40 @@ public class CustomerController {
     @Autowired
     private OfferService offerService;
     
+    @Autowired
+    private FavoriteService favoriteService;
+    
     @GetMapping("/dashboard")
-    public String dashboard(Model model, Authentication auth,
-                           @RequestParam(required = false) Category category,
-                           @RequestParam(required = false) String city) {
-        
+    public String dashboard(Model model, Authentication auth) {
         try {
             CustomUserDetailsService.CustomUserPrincipal principal = 
                 (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
             User customer = principal.getUser();
             
-            // Get offers based on filters - allow searching all cities
-            List<Offer> offers = offerService.searchOffers(category, city);
+            // Get recent offers (limit to 6 for dashboard)
+            List<Offer> allOffers = offerService.getApprovedOffers();
+            List<Offer> recentOffers = allOffers.stream()
+                .limit(6)
+                .collect(java.util.stream.Collectors.toList());
             
-            model.addAttribute("offers", offers);
+            // Get unique cities count
+            long cityCount = allOffers.stream()
+                .map(Offer::getCity)
+                .distinct()
+                .count();
+            
+            model.addAttribute("recentOffers", recentOffers);
+            model.addAttribute("totalOffers", allOffers.size());
+            model.addAttribute("favoriteCount", favoriteService.getFavoriteCountByUser(customer));
+            model.addAttribute("cityCount", cityCount);
             model.addAttribute("categories", Category.values());
-            model.addAttribute("selectedCategory", category);
-            model.addAttribute("selectedCity", city);
-            model.addAttribute("customer", customer);
             
             return "customer/dashboard";
         } catch (Exception e) {
-            model.addAttribute("error", "Error loading customer dashboard: " + e.getMessage());
-            return "error";
+            System.out.println("Customer dashboard error: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error loading dashboard: " + e.getMessage());
+            return "customer/dashboard";
         }
     }
     
@@ -52,13 +64,27 @@ public class CustomerController {
                               @RequestParam(required = false) Category category,
                               @RequestParam(required = false) String city) {
         
-        List<Offer> offers = offerService.searchOffers(category, city);
-        
-        model.addAttribute("offers", offers);
-        model.addAttribute("categories", Category.values());
-        model.addAttribute("selectedCategory", category);
-        model.addAttribute("selectedCity", city);
-        
-        return "customer/offers";
+        try {
+            System.out.println("=== Customer Browse Offers ===");
+            System.out.println("Category: " + category);
+            System.out.println("City: " + city);
+            
+            List<Offer> offers = offerService.searchOffers(category, city);
+            System.out.println("Returning " + offers.size() + " offers to template");
+            
+            model.addAttribute("offers", offers);
+            model.addAttribute("categories", Category.values());
+            model.addAttribute("selectedCategory", category);
+            model.addAttribute("selectedCity", city);
+            
+            return "customer/offers";
+        } catch (Exception e) {
+            System.out.println("Error in customer offers: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error loading offers: " + e.getMessage());
+            model.addAttribute("offers", new java.util.ArrayList<>());
+            model.addAttribute("categories", Category.values());
+            return "customer/offers";
+        }
     }
 }

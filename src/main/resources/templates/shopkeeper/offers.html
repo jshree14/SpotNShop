@@ -73,7 +73,7 @@
                                 <p class="text-muted" th:text="${offer.description}"></p>
                                 
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary" th:text="${offer.category?.getDisplayName() ?: 'Other'}"></span>
+                                    <span class="badge bg-secondary" th:text="${offer.category.displayName}"></span>
                                     <span class="badge bg-info" th:text="${offer.city}"></span>
                                 </div>
                                 
@@ -98,9 +98,9 @@
                             <div class="col-md-2">
                                 <div class="text-center">
                                     <span class="badge mb-2" 
-                                          th:classappend="${offer.status?.name() == 'APPROVED'} ? 'bg-success' : 
-                                                         (${offer.status?.name() == 'REJECTED'} ? 'bg-danger' : 'bg-warning')"
-                                          th:text="${offer.status?.getDisplayName() ?: 'Unknown'}">
+                                          th:classappend="${offer.status.name() == 'APPROVED'} ? 'bg-success' : 
+                                                         (${offer.status.name() == 'REJECTED'} ? 'bg-danger' : 'bg-warning')"
+                                          th:text="${offer.status.displayName}">
                                     </span>
                                     
                                     <div th:if="${offer.adminComments}" class="mt-2">
@@ -110,7 +110,7 @@
                                         </small>
                                     </div>
                                     
-                                    <div th:if="${offer.status?.name() == 'PENDING'}" class="mt-2">
+                                    <div th:if="${offer.status.name() == 'PENDING'}" class="mt-2">
                                         <small class="text-info">
                                             <i class="fas fa-clock"></i> Awaiting approval
                                         </small>

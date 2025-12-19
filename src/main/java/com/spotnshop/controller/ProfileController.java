@@ -5,12 +5,11 @@ import com.spotnshop.service.CustomUserDetailsService;
 import com.spotnshop.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/profile")
@@ -19,122 +18,112 @@ public class ProfileController {
     @Autowired
     private UserService userService;
     
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
     @GetMapping
-    public String viewProfile(Authentication auth, Model model) {
+    public String viewProfile(Model model, Authentication auth) {
         CustomUserDetailsService.CustomUserPrincipal principal = 
             (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
         User user = principal.getUser();
         
-        // Fetch fresh user data from database
-        User dbUser = userService.findById(user.getId()).orElse(user);
-        
-        model.addAttribute("user", dbUser);
+        // Get fresh user data from database to show latest changes
+        User freshUser = userService.findById(user.getId()).orElse(user);
+        model.addAttribute("user", freshUser);
         return "profile/view";
     }
     
     @GetMapping("/edit")
-    public String editProfile(Authentication auth, Model model) {
+    public String editProfile(Model model, Authentication auth) {
         CustomUserDetailsService.CustomUserPrincipal principal = 
             (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
         User user = principal.getUser();
         
-        // Fetch fresh user data from database
-        User dbUser = userService.findById(user.getId()).orElse(user);
-        
-        model.addAttribute("user", dbUser);
+        // Get fresh user data from database for editing
+        User freshUser = userService.findById(user.getId()).orElse(user);
+        model.addAttribute("user", freshUser);
         return "profile/edit";
     }
     
     @PostMapping("/edit")
-    public String updateProfile(@Valid @ModelAttribute("user") User updatedUser,
-                               BindingResult result,
-                               Authentication auth,
-                               Model model,
-                               RedirectAttributes redirectAttributes) {
-        
-        CustomUserDetailsService.CustomUserPrincipal principal = 
-            (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
-        User currentUser = principal.getUser();
-        
-        // Fetch the current user from database to get the latest version
-        User dbUser = userService.findById(currentUser.getId()).orElse(null);
-            
-        if (dbUser == null) {
-            model.addAttribute("errorMessage", "User not found. Please try logging in again.");
-            return "profile/edit";
-        }
-        
-        // Check if email is being changed and if it already exists
-        if (!dbUser.getEmail().equals(updatedUser.getEmail()) && 
-            userService.existsByEmail(updatedUser.getEmail())) {
-            result.rejectValue("email", "error.user", "Email already exists");
-        }
-        
-        if (result.hasErrors()) {
-            model.addAttribute("user", dbUser);
-            return "profile/edit";
-        }
-        
+    public String updateProfile(@ModelAttribute User updatedUser, 
+                               Authentication auth, 
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
         try {
+            CustomUserDetailsService.CustomUserPrincipal principal = 
+                (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
+            User currentUser = principal.getUser();
+            
+            // Get fresh user from database to avoid stale data
+            User dbUser = userService.findById(currentUser.getId()).orElse(currentUser);
+            
             // Update only allowed fields
             dbUser.setFullName(updatedUser.getFullName());
             dbUser.setEmail(updatedUser.getEmail());
             dbUser.setCity(updatedUser.getCity());
             dbUser.setPhoneNumber(updatedUser.getPhoneNumber());
             
-            userService.saveUser(dbUser);
+            // Save to database
+            User savedUser = userService.updateUser(dbUser);
+            
+            // Update the principal's user object with fresh data
+            principal.setUser(savedUser);
+            
             redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
-            return "redirect:/profile";
+            
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Failed to update profile: " + e.getMessage());
-            model.addAttribute("user", dbUser);
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating profile: " + e.getMessage());
+            // Return to edit form with error
+            model.addAttribute("user", updatedUser);
+            model.addAttribute("errorMessage", "Error updating profile: " + e.getMessage());
             return "profile/edit";
         }
+        
+        return "redirect:/profile";
     }
     
     @GetMapping("/notifications")
-    public String notificationSettings(Authentication auth, Model model) {
+    public String notificationSettings(Model model, Authentication auth) {
         CustomUserDetailsService.CustomUserPrincipal principal = 
             (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
         User user = principal.getUser();
         
-        // Fetch fresh user data from database
-        User dbUser = userService.findById(user.getId()).orElse(user);
-        
-        model.addAttribute("user", dbUser);
+        // Get fresh user data from database
+        User freshUser = userService.findById(user.getId()).orElse(user);
+        model.addAttribute("user", freshUser);
         return "profile/notifications";
     }
     
     @PostMapping("/notifications")
-    public String updateNotificationSettings(@ModelAttribute("user") User updatedUser,
-                                           Authentication auth,
-                                           Model model,
-                                           RedirectAttributes redirectAttributes) {
-        
-        CustomUserDetailsService.CustomUserPrincipal principal = 
-            (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
-        User currentUser = principal.getUser();
-        
-        // Fetch the current user from database
-        User dbUser = userService.findById(currentUser.getId()).orElse(null);
-            
-        if (dbUser == null) {
-            model.addAttribute("errorMessage", "User not found. Please try logging in again.");
-            return "profile/notifications";
-        }
-        
+    public String updateNotifications(@RequestParam(defaultValue = "false") boolean notificationsEnabled,
+                                    @RequestParam(defaultValue = "false") boolean localOffersNotification,
+                                    Authentication auth,
+                                    RedirectAttributes redirectAttributes) {
         try {
-            // Update notification preferences
-            dbUser.setNotificationsEnabled(updatedUser.isNotificationsEnabled());
-            dbUser.setLocalOffersNotification(updatedUser.isLocalOffersNotification());
+            CustomUserDetailsService.CustomUserPrincipal principal = 
+                (CustomUserDetailsService.CustomUserPrincipal) auth.getPrincipal();
+            User user = principal.getUser();
             
-            userService.saveUser(dbUser);
-            redirectAttributes.addFlashAttribute("successMessage", "Notification settings updated successfully!");
-            return "redirect:/profile/notifications";
+            // Get fresh user from database
+            User dbUser = userService.findById(user.getId()).orElse(user);
+            
+            dbUser.setNotificationsEnabled(notificationsEnabled);
+            dbUser.setLocalOffersNotification(localOffersNotification);
+            
+            User savedUser = userService.updateUser(dbUser);
+            
+            // Update the principal's user object
+            principal.setUser(savedUser);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Notification settings updated!");
+            
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Failed to update notification settings: " + e.getMessage());
-            model.addAttribute("user", dbUser);
-            return "profile/notifications";
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating settings: " + e.getMessage());
         }
+        
+        return "redirect:/profile/notifications";
     }
 }
