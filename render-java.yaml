@@ -1,7 +1,9 @@
 services:
   - type: web
     name: spotnshop-app
-    runtime: docker
+    runtime: java
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: java -Dserver.port=$PORT -jar target/spotnshop-app-1.0.0.jar
     plan: free
     envVars:
       - key: SPRING_PROFILES_ACTIVE
